@@ -1,6 +1,5 @@
 # Build Stage
-
-FROM eclipse-temurin:17-jdk as builder
+FROM eclipse-temurin:17-jdk AS builder
 
 WORKDIR /app
 
@@ -10,7 +9,7 @@ RUN apk add --no-cache maven && \
     mvn clean package -DskipTests
 
 # Runtime Stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
