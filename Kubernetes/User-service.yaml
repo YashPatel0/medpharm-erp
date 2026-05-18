@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service
+  namespace: med-erp
+  labels:
+    app: user-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: user-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: user-service
+    spec:
+      containers:
+        - name: user-service
+          image: yashpatel017/docker-user-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+              protocol: TCP
+          env:
+            - name: MONGODB_URI
+              value: "mongodb+srv://yashpatel_db:Yash123@cluster0.pmctvcs.mongodb.net/users_db?retryWrites=true&w=majority&appName=Cluster0"
+            - name: JWT_SECRET
+              value: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+            - name: JWT_EXPIRATION
+              value: "86400000"
+            - name: JWT_REFRESH_EXPIRATION
+              value: "604800000"
+            - name: CORS_ALLOWED_ORIGINS
+              value: "*"
+            - name: SEED_ADMIN_EMAIL
+              value: "admin@medicalerp.com"
+            - name: SEED_ADMIN_PASSWORD
+              value: "Admin@123456"
+            - name: SEED_ORG_NAME
+              value: "MedERP HQ"
+            - name: SEED_ORG_REG_NUMBER
+              value: "HQ-0001"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: med-erp
+
+spec:
+  selector:
+    app: user-service
+
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+
+  type: ClusterIP
