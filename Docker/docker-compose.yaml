@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+
+  user-service:
+    build:
+      context: ../user-service
+    container_name: user-service
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      MONGODB_URI: mongodb+srv://yashpatel_db:Yash123@cluster0.pmctvcs.mongodb.net/users_db?retryWrites=true&w=majority&appName=Cluster0
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXPIRATION: 604800000
+      CORS_ALLOWED_ORIGINS: "*"
+      SEED_ADMIN_EMAIL: admin@medicalerp.com
+      SEED_ADMIN_PASSWORD: Admin@123456
+      SEED_ORG_NAME: MedERP HQ
+      SEED_ORG_REG_NUMBER: HQ-0001
+
+    networks:
+      - med-erp-net
+
+  product-service:
+    build:
+      context: ../product-service
+    container_name: product-service
+    restart: always
+    ports:
+      - "8082:8082"
+    environment:
+      MONGODB_URI: mongodb+srv://yashpatel_db:Yash123@cluster0.pmctvcs.mongodb.net/products_db?retryWrites=true&w=majority&appName=Cluster0
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      CORS_ALLOWED_ORIGINS: "*"
+
+    networks:
+      - med-erp-net
+
+  order-service:
+    build: 
+      context: ../order-service
+    container_name: order-service
+    restart: always
+    ports:
+      - "8083:8083"
+    environment:
+      MONGODB_URI: mongodb+srv://yashpatel_db:Yash123@cluster0.pmctvcs.mongodb.net/orders_db?retryWrites=true&w=majority&appName=Cluster0
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      CORS_ALLOWED_ORIGINS: "*"
+
+      PRODUCT_SERVICE_URL: http://product-service:8082/api/v1
+      USER_SERVICE_URL: http://user-service:8081/api/v1
+
+    depends_on:
+      - user-service
+      - product-service
+
+    networks:
+      - med-erp-net
+
+  frontend:
+    build:
+      context: ../frontend
+    container_name: frontend-container
+    restart: always
+    ports:
+      - "80:80"
+
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+
+    networks:
+      - med-erp-net
+
+networks:
+  med-erp-net:
+    driver: bridge
